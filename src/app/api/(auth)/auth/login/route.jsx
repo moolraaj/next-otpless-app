@@ -1,57 +1,31 @@
  
-import userModel from '@/model/usermodel';
-import { LoginSchema } from '@/validators/authvalidators';
-import ErrorReporter from '@/validators/errorreporter';
-import vine, { errors } from '@vinejs/vine';
-import { NextResponse } from 'next/server';
-import bcryptjs from 'bcryptjs';
-import { DbConnect } from '@/database/databse';
+import { NextResponse } from 'next/server'
+import bcryptjs from 'bcryptjs'
+import adminModel from '@/model/usermodel'
+import { DbConnect } from '@/database/databse'
 
 DbConnect()
-
 export async function POST(req) {
-  try {
-    let payload = await req.json();
-    const validator = vine.compile(LoginSchema);
-    validator.errorReporter = () => new ErrorReporter();
-    const output = await validator.validate(payload);
-    let { email, password } = output;
+  let payload = await req.json()
+  let { email, password } = payload
 
-    if (!email || !password) {
-      return NextResponse.json({
-        status: 404,
-        message: 'Credentials are required',
-      });
-    }
-
-    let user = await userModel.findOne({ email });
-
-    if (!user) {
-      return NextResponse.json({
-        status: 404,
-        message: 'Credentials are required',
-      });
-    }
-
-    let checkedPass = await bcryptjs.compare(password, user.password);
-    if (!checkedPass) {
-      return NextResponse.json({
-        status: 404,
-        message: 'Credentials are required',
-      });
-    }
-    
-    user = user.toObject();
-    delete user.password;
-
+  let isEmail = await adminModel.findOne({ email })
+  if (isEmail) {
     return NextResponse.json({
       status: 200,
-      message: 'User successfully logged in',
-      user,
-    });
-  } catch (error) {
-    if (error instanceof errors.E_VALIDATION_ERROR) {
-      return NextResponse.json({ success: false, errors: error.messages });
-    }
+      message: 'admin logged in successfully',
+      isEmail,
+    })
   }
+
+  let salt = await bcryptjs.genSalt(10)
+  let hashPassword = await bcryptjs.hash(password, salt)
+
+  let result = new adminModel({
+    email: 'admin@gmail.com',
+    password: hashPassword,
+  })
+
+  await result.save()
+  return NextResponse.json({ result })
 }

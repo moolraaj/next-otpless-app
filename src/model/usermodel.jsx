@@ -1,10 +1,7 @@
 import mongoose from "mongoose";
 
-const userSchema=new mongoose.Schema({
-    name:{
-        type:String,
-        required:[true,'name is required']
-    },
+const adminSchema=new mongoose.Schema({
+    
     email:{
         type:String,
         required:[true,'email is required']
@@ -12,9 +9,13 @@ const userSchema=new mongoose.Schema({
     password:{
         type:String,
         required:[true,'password is required']
+    },
+    role:{
+        type:String,
+        default:'admin'
     }
     
 })
 
-const userModel=mongoose.models.users || mongoose.model('users',userSchema)
-export default userModel
+const adminModel=mongoose.models.testadmins || mongoose.model('testadmins',adminSchema)
+export default adminModel

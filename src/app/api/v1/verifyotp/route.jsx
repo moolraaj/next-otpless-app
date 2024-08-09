@@ -1,10 +1,15 @@
-import { NextResponse } from 'next/server';
+ 
+import { DbConnect } from "@/database/databse";
+import OtpUserModel from "@/model/otpUserModel";
+ 
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
     const { orderId, otp, phoneNumber } = await request.json();
-
+  
     try {
-        const response = await fetch('https://auth.otpless.app/auth/otp/v1/verify', {
+        // Verify OTP
+        const response = await fetch(`${process.env.NEXT_PUBLIC_OTPLESS_URL}/auth/otp/v1/verify`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -16,12 +21,31 @@ export async function POST(request) {
 
         const result = await response.json();
 
-        return NextResponse.json(result);
+        // Log the result for debugging
+        console.log('OTP Verification Result:', result);
+
+        // Check if the OTP verification is successful
+        if (result.isOTPVerified===true) {
+
+            await DbConnect()
+            // Connect to the database
+          
+  
+            // Check if the phone number already exists
+            let user = await OtpUserModel.findOne({ phoneNumber });
+  
+            if (!user) {
+                // Save phone number to MongoDB if not exists
+                user = await OtpUserModel.create({ phoneNumber });
+            }
+  
+            // Return success response
+            return NextResponse.json({ success: true, user });
+        } else {
+            return NextResponse.json({ error: 'Invalid OTP' }, { status: 400 });
+        }
     } catch (error) {
         console.error('Error verifying OTP:', error);
         return NextResponse.json({ error: 'Internal server issue' }, { status: 500 });
     }
 }
-
-
-

@@ -15,7 +15,7 @@ function Verifyotp() {
 
     const verifyOtpHandler = async () => {
         try {
-            const resp = await fetch('/api/verify-otp', {
+            const resp = await fetch('/api/v1/verifyotp', {
                 method: 'POST',
                 body: JSON.stringify({ orderId, otp, phoneNumber }),
                 headers: {
@@ -24,11 +24,8 @@ function Verifyotp() {
             });
 
             const result = await resp.json();
-            if (result.success) {
-                alert('OTP verified successfully');
-                router.push('/dashboard');
-            } else {
-                alert(result.error || 'OTP verification failed');
+            if(result){
+                alert('otp verify')
             }
         } catch (error) {
             console.error('Internal server issue:', error);

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
-    const { phoneNumber, channel = 'SMS', otpLength = 6, expiry = 7200 } = await request.json();
+    const { phoneNumber, channel = 'SMS', otpLength = 6, expiry = 10 } = await request.json();
 
     try {
-        const response = await fetch('https://auth.otpless.app/auth/otp/v1/send', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_OTPLESS_URL}/auth/otp/v1/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
